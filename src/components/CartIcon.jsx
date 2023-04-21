@@ -1,7 +1,7 @@
-import React, { useContext } from 'react'
+import React from 'react'
 import ShoppingBagOutlinedIcon from '@mui/icons-material/ShoppingBagOutlined'
 import { Badge, styled } from '@mui/material'
-import { ProductsContext } from '../ProductsContext'
+import { useSelector } from 'react-redux'
 
 const CustomizedBadge = styled(Badge)(({ theme }) => ({
   '& .MuiBadge-badge': {
@@ -21,10 +21,13 @@ const CustomizedBadge = styled(Badge)(({ theme }) => ({
 }))
 
 const CartIcon = () => {
-  const { cartItems } = useContext(ProductsContext)
+  const cartItems = useSelector((state) => state.cartItems)
 
   return (
-    <CustomizedBadge badgeContent={cartItems.length.toString()} color="primary">
+    <CustomizedBadge
+      badgeContent={cartItems?.length.toString()}
+      color="primary"
+    >
       <ShoppingBagOutlinedIcon />
     </CustomizedBadge>
   )
