@@ -21,7 +21,7 @@ const CustomizedBadge = styled(Badge)(({ theme }) => ({
 }))
 
 const CartIcon = () => {
-  const cartItems = useSelector((state) => state.cartItems)
+  const cartItems = useSelector((state) => state.cart.cartItems)
 
   return (
     <CustomizedBadge
