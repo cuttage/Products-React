@@ -1,14 +1,19 @@
 import React, { useEffect, useState, useCallback } from 'react'
+import { useHistory } from 'react-router-dom'
 import { useParams } from 'react-router-dom'
 import { useSelector, useDispatch } from 'react-redux'
 import useCategoryName from '../hooks/useCategoryName'
 import Rating from '@mui/material/Rating'
 import { addItemToCart } from '../store/cart.slice'
+import { setSelectedProducts } from '../store/filter.slice'
 
 const Product = () => {
+  const history = useHistory()
   const { id } = useParams()
   const dispatch = useDispatch()
   const products = useSelector((state) => state.cart.products)
+  const { selectedProducts } = useSelector((state) => state.filter)
+
   const [foundProduct, setFoundProduct] = useState(null)
   const [activeImageIndex, setActiveImageIndex] = useState(0)
   const [activeStep, setActiveStep] = useState(0)
@@ -17,7 +22,6 @@ const Product = () => {
     if (products) {
       const product = products.find((product) => product.id.toString() === id)
       setFoundProduct(product)
-      console.log(foundProduct)
     }
   }, [id, products])
 
@@ -49,6 +53,26 @@ const Product = () => {
     handleDotClick(activeStep - 1)
   }
 
+  const handleNavigation = (category) => {
+    if (selectedProducts.length > 0) {
+      const selectedCategory = categoryName(selectedProducts[0].category)
+      if (
+        selectedProducts.every(
+          (product) => categoryName(product.category) === selectedCategory
+        )
+      ) {
+        history.push('/')
+        return
+      }
+    }
+
+    const newSelectedProducts = products.filter((product) => {
+      return categoryName(product.category) === categoryName(category)
+    })
+    dispatch(setSelectedProducts(newSelectedProducts))
+    history.push('/')
+  }
+
   return (
     <div>
       {foundProduct && (
@@ -59,7 +83,10 @@ const Product = () => {
                 <a href="#">{'Categoria'.toUpperCase()}</a>
               </li>
               <li className="breadcrumb-item">
-                <a href="#">
+                <a
+                  href="#"
+                  onClick={() => handleNavigation(foundProduct.category)}
+                >
                   {categoryName(foundProduct.category).toUpperCase()}
                 </a>
               </li>
@@ -77,24 +104,25 @@ const Product = () => {
                   className="product-image"
                 />
               </div>
-              <div class="stepper">
+              <div className="stepper">
                 <button
-                  class="stepper-btn"
+                  className="stepper-btn"
                   id="back-btn"
                   onClick={handleBack}
                   disabled={activeStep === 0}
                 >
                   Back
                 </button>
-                <div class="stepper-dots">
+                <div className="stepper-dots">
                   {foundProduct.images.map((image, index) => (
                     <span
-                      class={index === activeStep ? 'dot active' : 'dot'}
+                      className={index === activeStep ? 'dot active' : 'dot'}
+                      key={image}
                     ></span>
                   ))}
                 </div>
                 <button
-                  class="stepper-btn"
+                  className="stepper-btn"
                   id="next-btn"
                   onClick={handleNext}
                   disabled={activeStep === foundProduct.images.length - 1}

@@ -7,10 +7,12 @@ import Layout from './components/Layout'
 import Home from './pages/Home'
 import Product from './pages/Product'
 import cartReducer, { fetchProducts } from './store/cart.slice'
+import filterReducer from './store/filter.slice'
 
 const store = configureStore({
   reducer: {
     cart: cartReducer,
+    filter: filterReducer,
   },
 })
 
