@@ -1,16 +1,29 @@
 import React, { useState, useCallback, useEffect } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
 import { Link } from 'react-router-dom'
-import { Toolbar, Button, Menu, MenuItem } from '@mui/material'
+import {
+  Toolbar,
+  Button,
+  Menu,
+  MenuItem,
+  IconButton,
+  Typography,
+} from '@mui/material'
+import FilterAltIcon from '@mui/icons-material/FilterAlt'
+import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown'
 import placeholder from '../assets/placeholder.jpeg'
 import useCategoryName from '../hooks/useCategoryName'
 import { setSelectedProducts } from '../store/filter.slice'
+import DropdownCustom from '../components/DropdownCustom'
 
 const Home = () => {
   const [anchorEl, setAnchorEl] = useState(null)
   const [isEven, setIsEven] = useState(false)
   const [is20, set20] = useState(true)
   const [moreClass, setMoreClass] = useState([])
+  const [isLgScreen, setIsLgScreen] = useState(false)
+  const [isOpen, setIsOpen] = useState(false)
+
   const products = useSelector((state) => state.cart.products)
   const categories = useSelector((state) => state.cart.categories)
   const isLoading = useSelector((state) => state.cart.isLoading)
@@ -34,6 +47,11 @@ const Home = () => {
 
   const handleClose = () => {
     setAnchorEl(null)
+  }
+
+  const handleOpen = () => {
+    setIsOpen(!isOpen)
+    handleClose()
   }
 
   const getBestImage = useCallback((product) => {
@@ -80,73 +98,132 @@ const Home = () => {
     }
   }, [selectedProducts])
 
+  useEffect(() => {
+    const handleResize = () => {
+      setIsLgScreen(window.innerWidth >= 768)
+    }
+
+    handleResize()
+    window.addEventListener('resize', handleResize)
+
+    return () => window.removeEventListener('resize', handleResize)
+  }, [])
+
   return (
     <div>
-      <section className="nav-wrapper">
-        <nav>
-          <ul className="navbar__links">
-            <li className="navbar__link__title">
-              <p className="navbar__link__p__variant">
-                {'Categoria'.toUpperCase()}
-              </p>
-            </li>
-            {isLoading ? (
-              <p style={{ padding: '15px' }}>Loading...</p>
-            ) : (
-              <>
-                {categories?.length > 0 &&
-                  [
-                    ...new Set(categories.map((name) => categoryName(name))),
-                  ].map((categoryN) => (
-                    <li className="navbar__link" key={categoryN}>
-                      <p
-                        className="navbar__link__p"
-                        onClick={() => handleProductsChange(categoryN)}
-                      >
-                        {categoryN.toUpperCase()}
-                      </p>
-                    </li>
-                  ))}
-              </>
-            )}
-          </ul>
-        </nav>
-        <Toolbar>
-          <Button
-            id="menu-button"
-            aria-controls="menu"
-            aria-haspopup="true"
-            onClick={handleClick}
-            color="inherit"
-            className="navbar__link__title marca-button"
-          >
-            Marca
-          </Button>
-          <Menu
-            id="menu"
-            anchorEl={anchorEl}
-            open={Boolean(anchorEl)}
-            onClose={handleClose}
-          >
-            {isLoading ? (
-              <p style={{ padding: '15px' }}>Loading...</p>
-            ) : (
-              products?.length > 0 &&
-              [...new Set(products.map((item) => item.brand))].map((brand) => (
-                <MenuItem
-                  onClick={() => {
-                    handleProductsChange(brand)
-                    handleClose()
-                  }}
-                  key={brand}
-                >
-                  {brand.toUpperCase()}
-                </MenuItem>
-              ))
-            )}
-          </Menu>
-        </Toolbar>
-      </section>
+      {isLgScreen ? (
+        <section className="nav-wrapper">
+          <nav>
+            <ul className="navbar__links">
+              <li className="navbar__link__title">
+                <p className="navbar__link__p__variant">
+                  {'Categoria'.toUpperCase()}
+                </p>
+              </li>
+              {isLoading ? (
+                <p style={{ padding: '15px' }}>Loading...</p>
+              ) : (
+                <>
+                  {categories?.length > 0 &&
+                    [
+                      ...new Set(categories.map((name) => categoryName(name))),
+                    ].map((categoryN) => (
+                      <li className="navbar__link" key={categoryN}>
+                        <p
+                          className="navbar__link__p"
+                          onClick={() => handleProductsChange(categoryN)}
+                        >
+                          {categoryN.toUpperCase()}
+                        </p>
+                      </li>
+                    ))}
+                </>
+              )}
+            </ul>
+          </nav>
+          <Toolbar>
+            <Button
+              id="menu-button"
+              aria-controls="menu"
+              aria-haspopup="true"
+              onClick={handleClick}
+              color="inherit"
+              className="navbar__link__title marca-button"
+            >
+              Marca
+            </Button>
+            <Menu
+              id="menu"
+              anchorEl={anchorEl}
+              open={Boolean(anchorEl)}
+              onClose={handleClose}
+            >
+              {isLoading ? (
+                <p style={{ padding: '15px' }}>Loading...</p>
+              ) : (
+                products?.length > 0 &&
+                [...new Set(products.map((item) => item.brand))].map(
+                  (brand) => (
+                    <MenuItem
+                      onClick={() => {
+                        handleProductsChange(brand)
+                        handleClose()
+                      }}
+                      key={brand}
+                    >
+                      {brand.toUpperCase()}
+                    </MenuItem>
+                  )
+                )
+              )}
+            </Menu>
+          </Toolbar>
+        </section>
+      ) : (
+        <section className="nav-wrapper nav-wrapper__mob">
+          <div className="nav-wrapper__mob__inner">
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                paddingLeft: '16px',
+              }}
+            >
+              <FilterAltIcon fontSize="small" style={{ marginRight: '4px' }} />
+              <Typography
+                variant="subtitle1"
+                style={{
+                  fontWeight: '600',
+                  fontFamily: 'Roboto',
+                  fontSize: '16px',
+                }}
+              >
+                {`Filtri`.toUpperCase()}
+              </Typography>
+            </div>
+            <IconButton
+              aria-controls="filter-menu"
+              aria-haspopup="true"
+              onClick={handleOpen}
+              color="inherit"
+              style={{ marginLeft: 'auto', padding: '0px 16px' }}
+            >
+              <ArrowDropDownIcon
+                style={{ transform: isOpen ? 'rotate(180deg)' : 'none' }}
+              />
+            </IconButton>
+          </div>
+          {isOpen && (
+            <DropdownCustom
+              categories={categories}
+              products={products}
+              isLoading={isLoading}
+              handleProductsChange={handleProductsChange}
+              categoryName={categoryName}
+            />
+          )}
+        </section>
+      )}
       <section className="product-grid-container">
         <div
           className={

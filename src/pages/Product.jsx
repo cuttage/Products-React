@@ -1,9 +1,9 @@
 import React, { useEffect, useState, useCallback } from 'react'
-import { useHistory } from 'react-router-dom'
-import { useParams } from 'react-router-dom'
 import { useSelector, useDispatch } from 'react-redux'
-import useCategoryName from '../hooks/useCategoryName'
+import { useHistory, useParams } from 'react-router-dom'
 import Rating from '@mui/material/Rating'
+
+import useCategoryName from '../hooks/useCategoryName'
 import { addItemToCart } from '../store/cart.slice'
 import { setSelectedProducts } from '../store/filter.slice'
 
@@ -12,7 +12,6 @@ const Product = () => {
   const { id } = useParams()
   const dispatch = useDispatch()
   const products = useSelector((state) => state.cart.products)
-  const { selectedProducts } = useSelector((state) => state.filter)
 
   const [foundProduct, setFoundProduct] = useState(null)
   const [activeImageIndex, setActiveImageIndex] = useState(0)
@@ -44,28 +43,20 @@ const Product = () => {
   }
 
   const handleNext = () => {
-    setActiveStep((prevActiveStep) => prevActiveStep + 1)
-    handleDotClick(activeStep + 1)
+    setActiveImageIndex((prevIndex) =>
+      prevIndex === foundProduct.images.length - 1 ? 0 : prevIndex + 1
+    )
+    setActiveStep((prevStep) =>
+      prevStep === foundProduct.images.length - 1 ? 0 : prevStep + 1
+    )
   }
 
-  const handleBack = () => {
-    setActiveStep((prevActiveStep) => prevActiveStep - 1)
-    handleDotClick(activeStep - 1)
+  const handleClick = (index) => {
+    setActiveStep(index)
+    handleDotClick(index)
   }
 
   const handleNavigation = (category) => {
-    if (selectedProducts.length > 0) {
-      const selectedCategory = categoryName(selectedProducts[0].category)
-      if (
-        selectedProducts.every(
-          (product) => categoryName(product.category) === selectedCategory
-        )
-      ) {
-        history.push('/')
-        return
-      }
-    }
-
     const newSelectedProducts = products.filter((product) => {
       return categoryName(product.category) === categoryName(category)
     })
@@ -80,15 +71,12 @@ const Product = () => {
           <div className="breadcrumb-container">
             <ul className="breadcrumb-list">
               <li className="breadcrumb-item">
-                <a href="#">{'Categoria'.toUpperCase()}</a>
+                <p>{'Categoria'.toUpperCase()}</p>
               </li>
               <li className="breadcrumb-item">
-                <a
-                  href="#"
-                  onClick={() => handleNavigation(foundProduct.category)}
-                >
+                <p onClick={() => handleNavigation(foundProduct.category)}>
                   {categoryName(foundProduct.category).toUpperCase()}
-                </a>
+                </p>
               </li>
               <li className="breadcrumb-item active">
                 {foundProduct.title.toUpperCase()}
@@ -97,7 +85,12 @@ const Product = () => {
           </div>
           <div className="product-container">
             <div className="product-image-prewrapper">
-              <div className="product-image-wrapper">
+              <div
+                className="product-image-wrapper"
+                onClick={handleNext}
+                role="button"
+                tabIndex={0}
+              >
                 <img
                   src={foundProduct.images[activeImageIndex]}
                   alt={foundProduct.title}
@@ -105,30 +98,19 @@ const Product = () => {
                 />
               </div>
               <div className="stepper">
-                <button
-                  className="stepper-btn"
-                  id="back-btn"
-                  onClick={handleBack}
-                  disabled={activeStep === 0}
-                >
-                  Back
-                </button>
                 <div className="stepper-dots">
                   {foundProduct.images.map((image, index) => (
                     <span
                       className={index === activeStep ? 'dot active' : 'dot'}
                       key={image}
+                      onClick={() => handleClick(index)}
+                      disabled={
+                        activeStep === 0 ||
+                        activeStep === foundProduct.images.length - 1
+                      }
                     ></span>
                   ))}
                 </div>
-                <button
-                  className="stepper-btn"
-                  id="next-btn"
-                  onClick={handleNext}
-                  disabled={activeStep === foundProduct.images.length - 1}
-                >
-                  Next
-                </button>
               </div>
             </div>
 
